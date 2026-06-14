@@ -1,3 +1,5 @@
+import { useRef, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Pagination, Navigation } from 'swiper/modules';
 import { PROJECTS } from '../constants';
@@ -7,9 +9,59 @@ import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
+// ── bidirectional hook ────────────────────────────────────────────────
+function useScrollInView() {
+  const ref = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+        } else {
+          if (entry.boundingClientRect.bottom < 0) setIsInView(false);
+          if (entry.boundingClientRect.top > window.innerHeight) setIsInView(false);
+        }
+      },
+      { threshold: 0, rootMargin: '0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, isInView];
+}
+
+// ── variants ──────────────────────────────────────────────────────────
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+// ── project card — hover animations only, Swiper controls the rest ────
 function ProjectCard({ project }) {
   return (
-    <div className="group relative rounded-2xl border border-border bg-surface/40 overflow-hidden flex flex-col">
+    <motion.div
+      className="group relative rounded-2xl border border-border bg-surface/40 overflow-hidden flex flex-col"
+      whileHover={{
+        y: -6,
+        borderColor: `${project.color}50`,
+        transition: { duration: 0.2, ease: 'easeOut' },
+      }}
+    >
       {/* Top glow line */}
       <div
         className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
@@ -18,12 +70,13 @@ function ProjectCard({ project }) {
 
       {/* Screenshot */}
       <div className="relative w-full h-44 overflow-hidden bg-black/30">
-        <img
+        <motion.img
           src={project.image}
           alt={project.title}
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover object-top"
+          whileHover={{ scale: 1.05, transition: { duration: 0.4, ease: 'easeOut' } }}
         />
         <div
           className="absolute inset-0 opacity-20"
@@ -75,111 +128,119 @@ function ProjectCard({ project }) {
 
         {/* Link */}
         <div className="mt-auto">
-          <a
+          <motion.a
             href={project.github}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-medium transition-colors duration-200"
+            className="inline-flex items-center gap-2 text-sm font-medium"
             style={{ color: project.color }}
+            whileHover={{ x: 4, transition: { duration: 0.15 } }}
           >
             View on GitHub <span>&#8594;</span>
-          </a>
+          </motion.a>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
+// ── section ───────────────────────────────────────────────────────────
 export default function Projects() {
+  const [headerRef, headerInView] = useScrollInView();
+  const [swiperRef, swiperInView] = useScrollInView();
+
   return (
     <section id="projects" className="min-h-screen py-24 flex flex-col justify-center overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-6 w-full">
-        <div className="mb-12">
-          <p className="font-mono text-accent text-sm tracking-widest uppercase mb-2">03 // Projects</p>
+
+        {/* Header */}
+        <motion.div
+          ref={headerRef}
+          className="mb-12"
+          initial="hidden"
+          animate={headerInView ? 'visible' : 'hidden'}
+          variants={fadeUp}
+        >
+          <p className="font-mono text-accent text-sm tracking-widest uppercase mb-2">
+            03 // Projects
+          </p>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-text">
             Things I've Built
           </h2>
-        </div>
+        </motion.div>
 
-<div className="overflow-hidden">
+        {/* Swiper wrapper — fades + rises as one unit */}
+        <motion.div
+          ref={swiperRef}
+          className="overflow-hidden"
+          initial="hidden"
+          animate={swiperInView ? 'visible' : 'hidden'}
+          variants={fadeIn}
+        >
+          <Swiper
+            effect="coverflow"
+            grabCursor={true}
+            centeredSlides={true}
+            spaceBetween={24}
+            pagination={{ clickable: true }}
+            navigation={true}
+            coverflowEffect={{
+              rotate: 20,
+              stretch: 0,
+              depth: 80,
+              modifier: 1,
+              slideShadows: false,
+            }}
+            breakpoints={{
+              0:    { slidesPerView: 1 },
+              768:  { slidesPerView: 2 },
+              1280: { slidesPerView: 3 },
+            }}
+            modules={[EffectCoverflow, Pagination, Navigation]}
+            className="w-full pb-14"
+            style={{ overflow: 'visible' }}
+          >
+            {PROJECTS.map((project) => (
+              <SwiperSlide key={project.title}>
+                <ProjectCard project={project} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </motion.div>
 
-        <Swiper
-  effect="coverflow"
-  grabCursor={true}
-  centeredSlides={true}
-  spaceBetween={24}
-  pagination={{ clickable: true }}
-  navigation={true}
-  coverflowEffect={{
-    rotate: 20,
-    stretch: 0,
-    depth: 80,
-    modifier: 1,
-    slideShadows: false,
-  }}
-  breakpoints={{
-    0: { slidesPerView: 1 },
-    768: { slidesPerView: 2 },
-    1280: { slidesPerView: 3 },
-  }}
-  modules={[EffectCoverflow, Pagination, Navigation]}
-  className="w-full pb-14"
-  style={{ overflow: 'visible' }} 
->
-          {PROJECTS.map((project) => (
-            <SwiperSlide key={project.title}>
-              <ProjectCard project={project} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
-        </div>
-        
       </div>
 
-<style>{`
-  .swiper {
-    overflow: visible !important;
-  }
-  .swiper-slide {
-    height: auto;
-    pointer-events: auto !important;
-    z-index: 1;
-  }
-  .swiper-slide-active {
-    z-index: 10 !important;
-  }
-  .swiper-slide-prev,
-  .swiper-slide-next {
-    z-index: 5 !important;
-    pointer-events: auto !important;
-  }
-  .swiper-wrapper {
-    will-change: transform;
-    pointer-events: none;   /* wrapper itself should NOT capture events */
-  }
-  .swiper-wrapper > * {
-    pointer-events: auto !important;  /* but children should */
-  }
-  .swiper-slide-shadow-left,
-  .swiper-slide-shadow-right {
-    display: none !important;
-  }
-  .swiper-button-next,
-  .swiper-button-prev {
-    color: var(--color-accent);
-    width: 30px !important;
-    height: 30px !important;
-    top: 30% !important;
-  }
-  .swiper-button-next::after,
-  .swiper-button-prev::after {
-    font-size: 18px !important;
-  }
-  .swiper-pagination-bullet-active {
-    background: var(--color-accent);
-  }
-`}</style>
+      <style>{`
+        .swiper { overflow: visible !important; }
+        .swiper-slide {
+          height: auto;
+          pointer-events: auto !important;
+          z-index: 1;
+        }
+        .swiper-slide-active { z-index: 10 !important; }
+        .swiper-slide-prev,
+        .swiper-slide-next {
+          z-index: 5 !important;
+          pointer-events: auto !important;
+        }
+        .swiper-wrapper {
+          will-change: transform;
+          pointer-events: none;
+        }
+        .swiper-wrapper > * { pointer-events: auto !important; }
+        .swiper-slide-shadow-left,
+        .swiper-slide-shadow-right { display: none !important; }
+        .swiper-button-next,
+        .swiper-button-prev {
+          color: var(--color-accent);
+          width: 30px !important;
+          height: 30px !important;
+          top: 30% !important;
+        }
+        .swiper-button-next::after,
+        .swiper-button-prev::after { font-size: 18px !important; }
+        .swiper-pagination-bullet-active { background: var(--color-accent); }
+      `}</style>
     </section>
   );
 }
