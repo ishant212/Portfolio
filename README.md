@@ -29,7 +29,7 @@ A modern interactive portfolio built with React, Vite, and Three.js, featuring a
 ### Clone the repository
 
 ```bash
-git clone https://github.com/your-username/3d-portfolio.git
+git clone https://portfolio-ishant212s-projects.vercel.app/
 cd 3d-portfolio
 ```
 
@@ -59,7 +59,7 @@ npm run dev
 
 ## Live Demo
 
-[https://portfolio-zeta-gules-hjdncubrk0.vercel.app/](https://portfolio-zeta-gules-hjdncubrk0.vercel.app/)
+[https://portfolio-ishant212s-projects.vercel.app/](https://portfolio-ishant212s-projects.vercel.app/)
 
 ---
 
