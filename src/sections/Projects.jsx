@@ -75,6 +75,8 @@ function ProjectCard({ project }) {
           alt={project.title}
           loading="lazy"
           decoding="async"
+          width={800}
+          height={450}
           className="w-full h-full object-cover object-top"
           whileHover={{ scale: 1.05, transition: { duration: 0.4, ease: 'easeOut' } }}
         />

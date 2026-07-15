@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber';
+import LazyCanvas from '../components/LazyCanvas';
+import CanvasFallback from '../components/CanvasFallback';
 import { OrbitControls } from '@react-three/drei';
 import { useRef, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -196,8 +197,8 @@ export default function Experience() {
             animate={headerInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
           >
-            <Canvas camera={{ position: [0, 0, 6], fov: 55 }}>
-              <Suspense fallback={null}>
+            <Suspense fallback={<CanvasFallback />}>
+              <LazyCanvas camera={{ position: [0, 0, 6], fov: 55 }}>
                 <ambientLight intensity={0.4} />
                 <pointLight position={[5, 5, 5]} color="#7c3aed" intensity={1.5} />
                 <TimelineSphere />
@@ -207,8 +208,8 @@ export default function Experience() {
                   autoRotate
                   autoRotateSpeed={0.8}
                 />
-              </Suspense>
-            </Canvas>
+              </LazyCanvas>
+            </Suspense>
           </motion.div>
 
           {/* Timeline */}

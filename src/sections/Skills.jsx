@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber';
+import LazyCanvas from '../components/LazyCanvas';
+import CanvasFallback from '../components/CanvasFallback';
 import { OrbitControls } from '@react-three/drei';
 import { useRef, Suspense } from 'react';
 import { motion, useInView } from 'framer-motion';
@@ -137,8 +138,8 @@ export default function Skills() {
             animate={headerInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.7, delay: 0.15, ease: 'easeOut' }}
           >
-            <Canvas camera={{ position: [0, 0, 8], fov: 55 }}>
-              <Suspense fallback={null}>
+            <Suspense fallback={<CanvasFallback />}>
+              <LazyCanvas camera={{ position: [0, 0, 8], fov: 55 }}>
                 <SkillOrbs />
                 <OrbitControls
                   enableZoom={false}
@@ -146,8 +147,8 @@ export default function Skills() {
                   autoRotate
                   autoRotateSpeed={1.2}
                 />
-              </Suspense>
-            </Canvas>
+              </LazyCanvas>
+            </Suspense>
           </motion.div>
 
           {/* Skill categories */}
